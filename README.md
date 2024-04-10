@@ -7,13 +7,13 @@ Welcome to my Google Colab Projects Repository! This repository contains a colle
 Here's a list of projects included in this repository:
 
 - **Project 1**: Brief description of project 1.
-  - Link to Colab notebook: [Project 1 Notebook]([Stable Diffusion implementation.ipynb](https://github.com/koopatroopa787/Google-colab/blob/afc736e70dfdb544025c189e44cc1c26a5ebd155/Stable%20Diffusion%20implementation.ipynb))
+  - Link to Colab notebook: [Project 1 Notebook](https://github.com/koopatroopa787/Google-colab/blob/afc736e70dfdb544025c189e44cc1c26a5ebd155/Stable%20Diffusion%20implementation.ipynb)
 
 - **Project 2**: Brief description of project 2.
   - Link to Colab notebook: [Project 2 Notebook]([mistral8x7b_rag.ipynb](https://github.com/koopatroopa787/Google-colab/blob/0b76292edec2c9b4277b04c8f82592564ad56e64/mistral8x7b_rag.ipynb))
 
 - **Project 3**: Brief description of project 3.
-  - Link to Colab notebook: [Project 3 Notebook]([link/to/project3_notebook.ipynb](https://github.com/koopatroopa787/Google-colab/blob/535d048905614d828978263fae6dba3be5905342/transformers(self_build)%5B2_9M_param_%26_141M_param%5D.ipynb))
+  - Link to Colab notebook: [Project 3 Notebook]([transformers(self_build)[2_9M_param_&_141M_param].ipynb](https://github.com/koopatroopa787/Google-colab/blob/535d048905614d828978263fae6dba3be5905342/transformers(self_build)%5B2_9M_param_%26_141M_param%5D.ipynb))
 
 ## Usage
 
