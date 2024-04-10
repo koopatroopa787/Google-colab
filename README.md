@@ -7,7 +7,7 @@ Welcome to my Google Colab Projects Repository! This repository contains a colle
 Here's a list of projects included in this repository:
 
 - **Project 1**: Brief description of project 1.
-  - Link to Colab notebook: [Project 1 Notebook](Stable Diffusion implementation.ipynb)
+  - Link to Colab notebook: [Project 1 Notebook]([Stable Diffusion implementation.ipynb](https://github.com/koopatroopa787/Google-colab/blob/afc736e70dfdb544025c189e44cc1c26a5ebd155/Stable%20Diffusion%20implementation.ipynb))
 
 - **Project 2**: Brief description of project 2.
   - Link to Colab notebook: [Project 2 Notebook](link/to/project2_notebook.ipynb)
