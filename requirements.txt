@@ -18,7 +18,10 @@ accelerate>=0.24.0
 safetensors>=0.4.0
 
 # Mistral RAG Project
-langchain>=0.0.300
+langchain>=0.1.0
+langchain-community>=0.0.20
+langchain-core>=0.1.23
+langchain-text-splitters>=0.0.1
 sentence-transformers>=2.2.0
 faiss-cpu>=1.7.4
 html2text>=2020.1.16

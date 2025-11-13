@@ -10,15 +10,28 @@ This module implements a RAG system using:
 
 import torch
 from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig, pipeline
-from langchain.text_splitter import CharacterTextSplitter
-from langchain.document_transformers import Html2TextTransformer
-from langchain.document_loaders import AsyncChromiumLoader
-from langchain.embeddings.huggingface import HuggingFaceEmbeddings
-from langchain.vectorstores import FAISS
-from langchain.prompts import PromptTemplate
-from langchain.schema.runnable import RunnablePassthrough
-from langchain.llms import HuggingFacePipeline
-from langchain.chains import LLMChain
+try:
+    # Try new LangChain imports (v0.1.0+)
+    from langchain_text_splitters import CharacterTextSplitter
+    from langchain_community.document_transformers import Html2TextTransformer
+    from langchain_community.document_loaders import AsyncChromiumLoader
+    from langchain_community.embeddings import HuggingFaceEmbeddings
+    from langchain_community.vectorstores import FAISS
+    from langchain_core.prompts import PromptTemplate
+    from langchain_core.runnables import RunnablePassthrough
+    from langchain_community.llms import HuggingFacePipeline
+    from langchain.chains import LLMChain
+except ImportError:
+    # Fall back to old imports
+    from langchain.text_splitter import CharacterTextSplitter
+    from langchain.document_transformers import Html2TextTransformer
+    from langchain.document_loaders import AsyncChromiumLoader
+    from langchain.embeddings.huggingface import HuggingFaceEmbeddings
+    from langchain.vectorstores import FAISS
+    from langchain.prompts import PromptTemplate
+    from langchain.schema.runnable import RunnablePassthrough
+    from langchain.llms import HuggingFacePipeline
+    from langchain.chains import LLMChain
 import nest_asyncio
 
 
