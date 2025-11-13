@@ -1,0 +1,43 @@
+# Core Dependencies
+torch>=2.0.0
+numpy>=1.24.0
+pandas>=2.0.0
+matplotlib>=3.7.0
+seaborn>=0.12.0
+
+# Web Interface
+gradio>=4.0.0
+
+# Transformers Project
+plotly>=5.17.0
+
+# Stable Diffusion Project
+diffusers>=0.24.0
+transformers>=4.34.0
+accelerate>=0.24.0
+safetensors>=0.4.0
+
+# Mistral RAG Project
+langchain>=0.0.300
+sentence-transformers>=2.2.0
+faiss-cpu>=1.7.4
+html2text>=2020.1.16
+playwright>=1.40.0
+nest-asyncio>=1.5.0
+
+# For 4-bit quantization (RAG)
+bitsandbytes>=0.40.0
+peft>=0.4.0
+
+# RL Project
+gymnasium>=0.29.0
+stable-baselines3>=2.1.0
+
+# Utilities
+urllib3>=2.0.0
+pillow>=10.0.0
+ipython>=8.12.0
+
+# Optional: For better performance
+# xformers>=0.0.20  # For faster diffusion
+# flash-attn>=2.0.0  # For faster attention (if supported)
