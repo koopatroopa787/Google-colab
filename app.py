@@ -55,10 +55,7 @@ def create_main_interface():
                 gr.Markdown("""
                 1. Run in terminal: `python transformers_from_scratch/app.py`
                 2. Or import and use programmatically
-                """)
 
-                with gr.Code(language="python"):
-                    gr.Markdown("""
 ```python
 # Example: Train a small transformer
 from transformers_from_scratch.models import Llama
@@ -93,7 +90,7 @@ generated = generate(model, config, max_new_tokens=100)
 text = decode(generated[0].tolist())
 print(text)
 ```
-                    """)
+                """)
 
             # Project 2: Stable Diffusion
             with gr.Tab("🎨 Stable Diffusion"):
@@ -120,10 +117,7 @@ print(text)
                 gr.Markdown("""
                 1. Run in terminal: `python stable_diffusion/app.py`
                 2. Or use programmatically
-                """)
 
-                with gr.Code(language="python"):
-                    gr.Markdown("""
 ```python
 # Example: Generate an image
 from stable_diffusion.core import StableDiffusionGenerator
@@ -143,7 +137,7 @@ images = generator.generate_image(
 # Save
 images[0].save("output.jpg")
 ```
-                    """)
+                """)
 
             # Project 3: Mistral RAG
             with gr.Tab("💬 Mistral RAG"):
@@ -171,10 +165,7 @@ images[0].save("output.jpg")
                 gr.Markdown("""
                 1. Run in terminal: `python mistral_rag/app.py`
                 2. Or use programmatically
-                """)
 
-                with gr.Code(language="python"):
-                    gr.Markdown("""
 ```python
 # Example: RAG question answering
 from mistral_rag.core import MistralRAGSystem
@@ -193,7 +184,7 @@ result = rag.ask("What is the main topic?")
 print(result['answer'])
 print("Sources:", result['context'])
 ```
-                    """)
+                """)
 
             # Project 4: RL BipedalWalker
             with gr.Tab("🤸 BipedalWalker RL"):
@@ -222,10 +213,7 @@ print("Sources:", result['context'])
                 gr.Markdown("""
                 1. Run in terminal: `python rl_bipedal_walker/app.py`
                 2. Or use programmatically
-                """)
 
-                with gr.Code(language="python"):
-                    gr.Markdown("""
 ```python
 # Example: Train a walking agent
 from rl_bipedal_walker.core import BipedalWalkerTrainer
@@ -245,7 +233,7 @@ print(f"Performance: {mean_reward:.2f} +/- {std_reward:.2f}")
 # Save
 trainer.save_model("my_walker.zip")
 ```
-                    """)
+                """)
 
         gr.Markdown("""
         ---
