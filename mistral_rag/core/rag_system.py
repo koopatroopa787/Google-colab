@@ -20,9 +20,10 @@ try:
     from langchain_core.prompts import PromptTemplate
     from langchain_core.runnables import RunnablePassthrough
     from langchain_community.llms import HuggingFacePipeline
-    from langchain.chains import LLMChain
-except ImportError:
+    from langchain.chains.llm import LLMChain
+except ImportError as e:
     # Fall back to old imports
+    print(f"Using fallback imports (old LangChain): {e}")
     from langchain.text_splitter import CharacterTextSplitter
     from langchain.document_transformers import Html2TextTransformer
     from langchain.document_loaders import AsyncChromiumLoader
