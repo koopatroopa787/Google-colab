@@ -69,11 +69,14 @@ def ask_question_rag(question, progress=gr.Progress()):
         progress(0.5, desc="Searching context...")
         result = rag_system.ask(question)
 
-        # Format context
+        # Format context (result['context'] is now a list of strings)
         context_text = "\n\n".join([
-            f"**Source {i+1}:**\n{doc.page_content[:200]}..."
-            for i, doc in enumerate(result['context'][:3])
+            f"**Source {i+1}:**\n{content[:200]}..."
+            for i, content in enumerate(result['context'][:3])
         ])
+
+        # Add source count
+        context_text = f"*Found {result['num_sources']} relevant source(s)*\n\n" + context_text
 
         progress(1.0, desc="Complete!")
         return result['answer'], context_text
@@ -199,7 +202,7 @@ def create_interface():
             - **Model**: Mistral-7B-Instruct (4-bit quantized)
             - **Embeddings**: sentence-transformers/all-mpnet-base-v2
             - **Vector Store**: FAISS
-            - **Framework**: LangChain
+            - **Framework**: LangChain (modern LCEL patterns)
 
             ### Benefits:
             - ✅ Grounded in actual documents
