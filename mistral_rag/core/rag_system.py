@@ -18,9 +18,9 @@ try:
     from langchain_community.embeddings import HuggingFaceEmbeddings
     from langchain_community.vectorstores import FAISS
     from langchain_core.prompts import PromptTemplate
-    from langchain_core.runnables import RunnablePassthrough
+    from langchain_core.runnables import RunnablePassthrough, RunnableLambda
+    from langchain_core.output_parsers import StrOutputParser
     from langchain_community.llms import HuggingFacePipeline
-    from langchain.chains.llm import LLMChain
 except ImportError as e:
     # Fall back to old imports
     print(f"Using fallback imports (old LangChain): {e}")
@@ -30,9 +30,9 @@ except ImportError as e:
     from langchain.embeddings.huggingface import HuggingFaceEmbeddings
     from langchain.vectorstores import FAISS
     from langchain.prompts import PromptTemplate
-    from langchain.schema.runnable import RunnablePassthrough
+    from langchain.schema.runnable import RunnablePassthrough, RunnableLambda
+    from langchain.schema.output_parser import StrOutputParser
     from langchain.llms import HuggingFacePipeline
-    from langchain.chains import LLMChain
 import nest_asyncio
 
 
@@ -153,7 +153,7 @@ class MistralRAGSystem:
 
     def setup_rag_chain(self):
         """
-        Setup the RAG chain for question answering
+        Setup the RAG chain for question answering using modern LCEL
         """
         if self.llm is None:
             raise RuntimeError("Model not loaded. Call load_model() first.")
@@ -177,16 +177,26 @@ If you cannot answer based on the context, say so.
             template=prompt_template,
         )
 
-        # Create LLM chain
-        llm_chain = LLMChain(llm=self.llm, prompt=prompt)
+        # Helper function to format retrieved documents
+        def format_docs(docs):
+            """Format retrieved documents into a single string"""
+            if isinstance(docs, list):
+                return "\n\n".join([doc.page_content if hasattr(doc, 'page_content') else str(doc) for doc in docs])
+            return str(docs)
 
-        # Create RAG chain
+        # Create RAG chain using LCEL (LangChain Expression Language)
+        # Modern pattern: use pipe operator to chain components
         self.rag_chain = (
-            {"context": self.retriever, "question": RunnablePassthrough()}
-            | llm_chain
+            {
+                "context": self.retriever | RunnableLambda(format_docs),
+                "question": RunnablePassthrough()
+            }
+            | prompt
+            | self.llm
+            | StrOutputParser()
         )
 
-        print("✓ RAG chain configured!")
+        print("✓ RAG chain configured using modern LCEL!")
 
     def ask(self, question):
         """
@@ -196,17 +206,22 @@ If you cannot answer based on the context, say so.
             question: Question string
 
         Returns:
-            Dictionary with answer and context
+            Dictionary with answer and retrieved context
         """
         if self.rag_chain is None:
             raise RuntimeError("RAG chain not setup. Call setup_rag_chain() first.")
 
-        result = self.rag_chain.invoke(question)
+        # Get retrieved documents for context
+        retrieved_docs = self.retriever.get_relevant_documents(question)
+
+        # Invoke the chain (returns string due to StrOutputParser)
+        answer = self.rag_chain.invoke(question)
 
         return {
             'question': question,
-            'answer': result['text'],
-            'context': result.get('context', [])
+            'answer': answer,
+            'context': [doc.page_content for doc in retrieved_docs],
+            'num_sources': len(retrieved_docs)
         }
 
     def ask_without_context(self, question):
@@ -223,6 +238,8 @@ If you cannot answer based on the context, say so.
             raise RuntimeError("Model not loaded. Call load_model() first.")
 
         prompt = f"### Question: {question}\n### Answer:"
-        result = self.llm(prompt)
+
+        # Use invoke for modern LangChain compatibility
+        result = self.llm.invoke(prompt)
 
         return result
