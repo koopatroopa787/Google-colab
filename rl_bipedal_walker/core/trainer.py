@@ -12,6 +12,8 @@ from stable_baselines3.common.evaluation import evaluate_policy
 from stable_baselines3.common.monitor import Monitor
 from stable_baselines3.common.vec_env import DummyVecEnv
 import matplotlib.pyplot as plt
+from PIL import Image
+import io
 
 
 class BipedalWalkerTrainer:
@@ -164,15 +166,16 @@ class BipedalWalkerTrainer:
         env.close()
         return info
 
-    def visualize_episode(self, save_path=None):
+    def visualize_episode(self, save_path=None, max_steps=1000):
         """
-        Run and visualize a single episode
+        Run and visualize a single episode with frame recording
 
         Args:
-            save_path: Optional path to save visualization
+            save_path: Optional path to save video/GIF
+            max_steps: Maximum steps per episode
 
         Returns:
-            Total reward for the episode
+            frames, total_reward, steps
         """
         if self.model is None:
             raise RuntimeError("No model to visualize. Train or load a model first.")
@@ -182,13 +185,63 @@ class BipedalWalkerTrainer:
         obs, info = env.reset()
         total_reward = 0
         done = False
+        frames = []
+        steps = 0
 
-        while not done:
+        while not done and steps < max_steps:
+            # Render frame
+            frame = env.render()
+            frames.append(frame)
+
+            # Take action
             action, _states = self.model.predict(obs, deterministic=True)
             obs, reward, terminated, truncated, info = env.step(action)
             total_reward += reward
             done = terminated or truncated
+            steps += 1
 
         env.close()
 
-        return total_reward
+        return frames, total_reward, steps
+
+    def create_gif(self, frames, output_path='episode.gif', duration=50):
+        """
+        Create a GIF from episode frames
+
+        Args:
+            frames: List of RGB arrays
+            output_path: Path to save GIF
+            duration: Duration per frame in milliseconds
+
+        Returns:
+            Path to saved GIF
+        """
+        images = [Image.fromarray(frame) for frame in frames]
+
+        # Save as GIF
+        images[0].save(
+            output_path,
+            save_all=True,
+            append_images=images[1:],
+            duration=duration,
+            loop=0
+        )
+
+        return output_path
+
+    def get_sample_frames(self, frames, num_samples=6):
+        """
+        Get evenly spaced sample frames from episode
+
+        Args:
+            frames: List of all frames
+            num_samples: Number of frames to sample
+
+        Returns:
+            List of sampled frames
+        """
+        if len(frames) <= num_samples:
+            return frames
+
+        indices = np.linspace(0, len(frames) - 1, num_samples, dtype=int)
+        return [frames[i] for i in indices]

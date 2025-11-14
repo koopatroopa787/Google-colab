@@ -7,10 +7,15 @@ Train an AI agent to walk using reinforcement learning (PPO algorithm).
 import gradio as gr
 from core.trainer import BipedalWalkerTrainer
 import matplotlib.pyplot as plt
+import numpy as np
+from PIL import Image
 
 
 # Global trainer instance
 trainer = None
+# Global storage for visualization
+current_frames = None
+current_stats = None
 
 
 def create_trainer(n_envs, n_steps, batch_size):
@@ -116,6 +121,80 @@ def get_env_info_fn():
         return f"Error: {str(e)}"
 
 
+def visualize_episode_fn(max_steps):
+    """Visualize a trained agent walking"""
+    global trainer, current_frames, current_stats
+
+    if trainer is None or trainer.model is None:
+        return (
+            None,
+            "❌ Please create and train a model first!",
+            None,
+            None,
+            None,
+            None,
+            None,
+            None
+        )
+
+    try:
+        # Run episode and record frames
+        frames, total_reward, steps = trainer.visualize_episode(max_steps=int(max_steps))
+
+        # Store globally
+        current_frames = frames
+        current_stats = {'reward': total_reward, 'steps': steps}
+
+        # Get sample frames for display (6 evenly spaced frames)
+        sample_frames = trainer.get_sample_frames(frames, num_samples=6)
+
+        # Convert to PIL Images for Gradio
+        sample_images = [Image.fromarray(frame) for frame in sample_frames]
+
+        # Create GIF
+        gif_path = 'walker_episode.gif'
+        trainer.create_gif(frames, gif_path, duration=50)
+
+        # Create stats summary
+        stats_text = f"""
+## Episode Statistics
+
+- **Total Reward**: {total_reward:.2f}
+- **Steps**: {steps}
+- **Average Reward/Step**: {total_reward/steps:.3f}
+- **Status**: {"✓ Success!" if total_reward > 0 else "⚠ Need more training"}
+
+**Interpretation:**
+- Random policy: ~-100 (falls immediately)
+- Decent policy: 50-150
+- Good policy: 200-300+
+"""
+
+        # Return 6 sample frames + GIF + stats
+        return (
+            sample_images[0] if len(sample_images) > 0 else None,
+            stats_text,
+            sample_images[1] if len(sample_images) > 1 else None,
+            sample_images[2] if len(sample_images) > 2 else None,
+            sample_images[3] if len(sample_images) > 3 else None,
+            sample_images[4] if len(sample_images) > 4 else None,
+            sample_images[5] if len(sample_images) > 5 else None,
+            gif_path
+        )
+
+    except Exception as e:
+        return (
+            None,
+            f"❌ Error: {str(e)}\n\nMake sure you have a trained model!",
+            None,
+            None,
+            None,
+            None,
+            None,
+            None
+        )
+
+
 def create_interface():
     """Create Gradio interface"""
 
@@ -198,6 +277,55 @@ def create_interface():
                 eval_output = gr.Textbox(label="Evaluation Results", lines=3)
 
                 eval_btn.click(evaluate_agent, outputs=eval_output)
+
+            with gr.Tab("🎬 Visualize Walker"):
+                gr.Markdown("""
+                ### Watch Your Trained Agent Walk!
+
+                See your agent in action! This will run one episode and show you how the walker performs.
+                """)
+
+                max_steps_slider = gr.Slider(
+                    100, 2000,
+                    value=1000,
+                    step=100,
+                    label="Max Steps per Episode"
+                )
+
+                visualize_btn = gr.Button("🎥 Run & Visualize Episode", variant="primary", size="lg")
+
+                with gr.Row():
+                    frame1 = gr.Image(label="Frame 1 (Start)", type="pil")
+                    stats_output = gr.Markdown(value="Run an episode to see statistics")
+
+                gr.Markdown("### Episode Progression")
+
+                with gr.Row():
+                    frame2 = gr.Image(label="Frame 2", type="pil")
+                    frame3 = gr.Image(label="Frame 3", type="pil")
+                    frame4 = gr.Image(label="Frame 4", type="pil")
+
+                with gr.Row():
+                    frame5 = gr.Image(label="Frame 5", type="pil")
+                    frame6 = gr.Image(label="Frame 6 (End)", type="pil")
+
+                gr.Markdown("### Full Episode Animation")
+
+                gif_output = gr.Image(label="Complete Episode (GIF)", type="filepath")
+
+                gr.Markdown("""
+                **Tips:**
+                - The frames show key moments throughout the episode
+                - The GIF shows the complete episode animation
+                - Good walkers should show smooth, coordinated movement
+                - If the walker falls immediately, it needs more training!
+                """)
+
+                visualize_btn.click(
+                    visualize_episode_fn,
+                    inputs=max_steps_slider,
+                    outputs=[frame1, stats_output, frame2, frame3, frame4, frame5, frame6, gif_output]
+                )
 
             with gr.Tab("💾 Save/Load"):
                 gr.Markdown("### Save or Load Model")
