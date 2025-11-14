@@ -61,24 +61,27 @@ def load_dataset_fn(dataset_choice):
     """Load and prepare dataset"""
     global current_dataset, encode_fn, decode_fn, current_config
 
-    if dataset_choice == "TinyShakespeare":
-        url = "https://raw.githubusercontent.com/karpathy/char-rnn/master/data/tinyshakespeare/input.txt"
-        file_path = "tinyshakespeare.txt"
-    else:
-        return "Dataset not available"
+    try:
+        if dataset_choice == "TinyShakespeare":
+            url = "https://raw.githubusercontent.com/karpathy/char-rnn/master/data/tinyshakespeare/input.txt"
+            file_path = "tinyshakespeare.txt"
+        else:
+            return "Dataset not available"
 
-    current_dataset, vocab, encode_fn, decode_fn = prepare_dataset(file_path, url)
+        current_dataset, vocab, encode_fn, decode_fn = prepare_dataset(file_path, url)
 
-    # Update vocab size in config if model exists
-    if current_config:
-        current_config['vocab_size'] = len(vocab)
+        # Update vocab size in config if model exists
+        if current_config:
+            current_config['vocab_size'] = len(vocab)
 
-    return f"✓ Dataset loaded!\n\nStats:\n{'-'*40}\n" + \
-           f"Total characters: {len(current_dataset):,}\n" + \
-           f"Vocabulary size: {len(vocab)}\n" + \
-           f"Train size: {int(len(current_dataset)*0.8):,}\n" + \
-           f"Val size: {int(len(current_dataset)*0.1):,}\n" + \
-           f"Test size: {int(len(current_dataset)*0.1):,}"
+        return f"✓ Dataset loaded!\n\nStats:\n{'-'*40}\n" + \
+               f"Total characters: {len(current_dataset):,}\n" + \
+               f"Vocabulary size: {len(vocab)}\n" + \
+               f"Train size: {int(len(current_dataset)*0.8):,}\n" + \
+               f"Val size: {int(len(current_dataset)*0.1):,}\n" + \
+               f"Test size: {int(len(current_dataset)*0.1):,}"
+    except Exception as e:
+        return f"❌ Error loading dataset: {str(e)}"
 
 
 def train_model_fn(epochs, learning_rate):
@@ -116,21 +119,30 @@ def generate_text_fn(num_tokens, temperature, num_samples):
     global current_model, current_config, decode_fn
 
     if current_model is None:
-        return "Please create and train a model first!"
+        return "❌ Please create a model first!"
 
-    # Generate
-    generated_indices = generate(
-        current_model,
-        current_config,
-        max_new_tokens=int(num_tokens),
-        temperature=float(temperature),
-        num_samples=int(num_samples)
-    )
+    if decode_fn is None:
+        return "❌ Please load a dataset first!\n\nGo to the 'Data' tab and load TinyShakespeare dataset."
 
-    # Decode
-    texts = [decode_fn(indices.tolist()) for indices in generated_indices]
+    try:
+        # Generate
+        generated_indices = generate(
+            current_model,
+            current_config,
+            max_new_tokens=int(num_tokens),
+            temperature=float(temperature),
+            num_samples=int(num_samples)
+        )
 
-    return "\n\n" + "="*60 + "\n\n".join([f"Sample {i+1}:\n{text}" for i, text in enumerate(texts)])
+        # Decode
+        texts = [decode_fn(indices.tolist()) for indices in generated_indices]
+
+        result = "\n\n" + "="*60 + "\n\n"
+        result += "\n\n".join([f"Sample {i+1}:\n{text}" for i, text in enumerate(texts)])
+
+        return result
+    except Exception as e:
+        return f"❌ Error generating text: {str(e)}"
 
 
 def visualize_architecture_fn():
@@ -138,10 +150,24 @@ def visualize_architecture_fn():
     global current_config
 
     if current_config is None:
-        return None
+        # Return empty figure with message
+        import matplotlib.pyplot as plt
+        fig, ax = plt.subplots(figsize=(10, 6))
+        ax.text(0.5, 0.5, 'No model configuration available.\nPlease create a model first.',
+                ha='center', va='center', fontsize=14, transform=ax.transAxes)
+        ax.axis('off')
+        return fig
 
-    fig = visualize_architecture(current_config)
-    return fig
+    try:
+        fig = visualize_architecture(current_config)
+        return fig
+    except Exception as e:
+        import matplotlib.pyplot as plt
+        fig, ax = plt.subplots(figsize=(10, 6))
+        ax.text(0.5, 0.5, f'Error creating visualization:\n{str(e)}',
+                ha='center', va='center', fontsize=12, color='red', transform=ax.transAxes)
+        ax.axis('off')
+        return fig
 
 
 def visualize_training_fn():
@@ -149,10 +175,37 @@ def visualize_training_fn():
     global training_history
 
     if training_history is None:
-        return None
+        # Return empty plot with message
+        import plotly.graph_objects as go
+        fig = go.Figure()
+        fig.add_annotation(
+            text="No training history available.<br>Please train a model first.",
+            xref="paper", yref="paper",
+            x=0.5, y=0.5,
+            showarrow=False,
+            font=dict(size=16)
+        )
+        fig.update_layout(
+            xaxis=dict(showgrid=False, showticklabels=False, zeroline=False),
+            yaxis=dict(showgrid=False, showticklabels=False, zeroline=False),
+            height=400
+        )
+        return fig
 
-    fig = visualize_training_progress_interactive(training_history)
-    return fig
+    try:
+        fig = visualize_training_progress_interactive(training_history)
+        return fig
+    except Exception as e:
+        import plotly.graph_objects as go
+        fig = go.Figure()
+        fig.add_annotation(
+            text=f"Error creating visualization:<br>{str(e)}",
+            xref="paper", yref="paper",
+            x=0.5, y=0.5,
+            showarrow=False,
+            font=dict(size=14, color="red")
+        )
+        return fig
 
 
 def visualize_model_info_fn():
@@ -160,11 +213,38 @@ def visualize_model_info_fn():
     global current_model
 
     if current_model is None:
-        return None
+        # Return empty plot with message
+        import plotly.graph_objects as go
+        fig = go.Figure()
+        fig.add_annotation(
+            text="No model available.<br>Please create a model first.",
+            xref="paper", yref="paper",
+            x=0.5, y=0.5,
+            showarrow=False,
+            font=dict(size=16)
+        )
+        fig.update_layout(
+            xaxis=dict(showgrid=False, showticklabels=False, zeroline=False),
+            yaxis=dict(showgrid=False, showticklabels=False, zeroline=False),
+            height=400
+        )
+        return fig
 
-    info = get_model_info(current_model)
-    fig = visualize_model_size(info)
-    return fig
+    try:
+        info = get_model_info(current_model)
+        fig = visualize_model_size(info)
+        return fig
+    except Exception as e:
+        import plotly.graph_objects as go
+        fig = go.Figure()
+        fig.add_annotation(
+            text=f"Error creating visualization:<br>{str(e)}",
+            xref="paper", yref="paper",
+            x=0.5, y=0.5,
+            showarrow=False,
+            font=dict(size=14, color="red")
+        )
+        return fig
 
 
 def create_interface():
