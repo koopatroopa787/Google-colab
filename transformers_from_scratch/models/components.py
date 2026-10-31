@@ -139,7 +139,7 @@ class RoPEAttentionHead(nn.Module):
 
         # Scaled dot-product attention with causal mask
         activations = F.scaled_dot_product_attention(
-            q_rotated, k_rotated, v, dropout_p=0.1, is_causal=True
+            q_rotated, k_rotated, v, dropout_p=0.1 if self.training else 0.0, is_causal=True
         )
 
         if return_attn_weights:
